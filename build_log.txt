@@ -31,10 +31,7 @@
 > Task :app:validateSigningDebug UP-TO-DATE
 > Task :app:writeDebugAppMetadata UP-TO-DATE
 > Task :app:writeDebugSigningConfigVersions UP-TO-DATE
-
 > Task :app:compileDebugKotlin
-w: file:///C:/project/zerogoat/app/src/main/java/com/zerogoat/zero/ui/overlay/FloatingBubbleService.kt:92:42 Parameter 'view' is never used, could be renamed to _
-
 > Task :app:compileDebugJavaWithJavac NO-SOURCE
 > Task :app:dexBuilderDebug
 > Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
