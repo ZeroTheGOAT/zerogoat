@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "C:\\Users\\harih\\.gradle\\daemon\\8.5\\com.zerogoat.zero.app-merged_res-58:\\xml_accessibility_service_config.xml.flat",
+        "source": "C:\\Users\\harih\\.gradle\\daemon\\8.5\\com.zerogoat.zero.app-main-60:\\xml\\accessibility_service_config.xml"
+    },
+    {
+        "merged": "com.zerogoat.zero.app-merged_res-58:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.zerogoat.zero.app-main-60:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.zerogoat.zero.app-merged_res-58:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.zerogoat.zero.app-main-60:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.zerogoat.zero.app-merged_res-58:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.zerogoat.zero.app-main-60:/drawable/ic_launcher_foreground.xml"
+    }
+]

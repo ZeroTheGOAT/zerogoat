@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ZeroGoat" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@color/zero_bg_primary</item>
+        <item name="android:navigationBarColor">@color/zero_bg_primary</item>
+        <item name="android:windowBackground">@color/zero_bg_primary</item>
+    </style>
+</resources>
