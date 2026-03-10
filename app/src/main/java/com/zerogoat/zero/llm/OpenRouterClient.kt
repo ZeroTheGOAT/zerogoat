@@ -184,6 +184,14 @@ class OpenRouterClient(
     private fun parseResponse(body: String): LLMResponse {
         return try {
             val json = JSONObject(body)
+            
+            // Check for OpenRouter API errors (e.g., quota exceeded, invalid key)
+            if (json.has("error")) {
+                val errorObj = json.getJSONObject("error")
+                val msg = errorObj.optString("message", "Unknown OpenRouter Error")
+                return LLMResponse("", error = msg)
+            }
+            
             val choices = json.getJSONArray("choices")
             val message = choices.getJSONObject(0).getJSONObject("message")
             val content = message.getString("content")
@@ -195,7 +203,7 @@ class OpenRouterClient(
             LLMResponse(content, inputTokens, outputTokens)
         } catch (e: Exception) {
             Log.e(TAG, "Parse error: ${e.message}, body: ${body.take(200)}")
-            LLMResponse("", error = e.message)
+            LLMResponse("", error = "Parse error: ${e.message}")
         }
     }
 }
