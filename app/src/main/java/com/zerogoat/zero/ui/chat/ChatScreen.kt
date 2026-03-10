@@ -25,6 +25,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.util.Consumer
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.ComponentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zerogoat.zero.agent.AgentState
 import com.zerogoat.zero.ui.theme.ZeroColors
@@ -54,6 +58,28 @@ fun ChatScreen(
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.lastIndex)
+        }
+    }
+
+    val context = LocalContext.current
+    DisposableEffect(context) {
+        val activity = context as? ComponentActivity
+        val listener = Consumer<Intent> { intent ->
+            if (intent.getBooleanExtra("start_voice", false)) {
+                intent.removeExtra("start_voice")
+                viewModel.voiceEngine.startListening()
+            }
+        }
+        activity?.addOnNewIntentListener(listener)
+        
+        // Also check current intent
+        if (activity?.intent?.getBooleanExtra("start_voice", false) == true) {
+            activity.intent.removeExtra("start_voice")
+            viewModel.voiceEngine.startListening()
+        }
+        
+        onDispose {
+            activity?.removeOnNewIntentListener(listener)
         }
     }
 

@@ -61,6 +61,22 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
         <service
+            android:name="com.zerogoat.zero.voice.ZeroVoiceInteractionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VOICE_INTERACTION" >
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/voice_interaction" />
+
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.zerogoat.zero.voice.ZeroVoiceInteractionSessionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VOICE_INTERACTION" />
+        <service
             android:name="com.zerogoat.zero.ui.overlay.FloatingBubbleService"
             android:exported="false"
             android:foregroundServiceType="specialUse" />

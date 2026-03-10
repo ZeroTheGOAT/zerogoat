@@ -84,13 +84,10 @@ class FloatingBubbleService : Service() {
                     val dx = event.rawX - initialTouchX
                     val dy = event.rawY - initialTouchY
                     if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-                        // It was a tap, not a drag — broadcast intent to start voice
-                        val intent = Intent("com.zerogoat.zero.START_VOICE")
-                        sendBroadcast(intent)
-                        
-                        // Also try to open the app if voice engine isn't running foreground
+                        // It was a tap, not a drag — open the app and trigger voice
                         val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
                         launchIntent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                        launchIntent?.putExtra("start_voice", true)
                         if (launchIntent != null) startActivity(launchIntent)
                     }
                     true

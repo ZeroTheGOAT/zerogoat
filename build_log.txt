@@ -4,13 +4,13 @@
 > Task :app:checkKotlinGradlePluginConfigurationErrors
 > Task :app:checkDebugAarMetadata UP-TO-DATE
 > Task :app:generateDebugResValues UP-TO-DATE
-> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources UP-TO-DATE
-> Task :app:mergeDebugResources UP-TO-DATE
-> Task :app:packageDebugResources UP-TO-DATE
-> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:packageDebugResources
 > Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
 > Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:parseDebugLocalResources
+> Task :app:mergeDebugResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:javaPreCompileDebug UP-TO-DATE
@@ -33,8 +33,9 @@
 > Task :app:processDebugResources
 
 > Task :app:compileDebugKotlin
+w: file:///C:/project/zerogoat/app/src/main/java/com/zerogoat/zero/ui/chat/ChatScreen.kt:55:9 Variable 'coroutineScope' is never used
+w: file:///C:/project/zerogoat/app/src/main/java/com/zerogoat/zero/ui/chat/ChatScreen.kt:295:43 'Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send
 w: file:///C:/project/zerogoat/app/src/main/java/com/zerogoat/zero/ui/overlay/FloatingBubbleService.kt:68:42 Parameter 'view' is never used, could be renamed to _
-w: file:///C:/project/zerogoat/app/src/main/java/com/zerogoat/zero/ui/settings/SettingsScreen.kt:66:43 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
 
 > Task :app:compileDebugJavaWithJavac NO-SOURCE
 > Task :app:dexBuilderDebug
@@ -46,5 +47,5 @@ w: file:///C:/project/zerogoat/app/src/main/java/com/zerogoat/zero/ui/settings/S
 > Task :app:createDebugApkListingFileRedirect UP-TO-DATE
 > Task :app:assembleDebug
 
-BUILD SUCCESSFUL in 7s
-33 actionable tasks: 9 executed, 24 up-to-date
+BUILD SUCCESSFUL in 6s
+33 actionable tasks: 13 executed, 20 up-to-date

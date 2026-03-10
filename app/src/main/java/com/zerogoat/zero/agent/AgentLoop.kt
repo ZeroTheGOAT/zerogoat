@@ -126,7 +126,7 @@ class AgentLoop(
                 val service = ZeroAccessibilityService.instance.value
                 if (service == null) {
                     _state.value = AgentState.Failed(
-                        "Accessibility Service not running. Enable it in Settings.",
+                        "Accessibility Service disconnected. If you just updated the app, you MUST turn it OFF and back ON in Android Settings to rebind it.",
                         step, tokenTracker.taskTokens.value
                     )
                     return

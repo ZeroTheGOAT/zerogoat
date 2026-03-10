@@ -52,6 +52,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     val voiceEngine = VoiceEngine(app)
     private var agentLoop: AgentLoop? = null
+    
+    private var isCurrentTaskVoice = false
 
     private val voiceReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
@@ -64,7 +66,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     init {
         // Initialize voice with command handler
         voiceEngine.initialize { command ->
-            sendMessage(command)
+            sendMessage(command, isVoice = true)
         }
 
         // Register voice receiver
@@ -85,8 +87,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Send a text command to Zero */
-    fun sendMessage(text: String) {
+    fun sendMessage(text: String, isVoice: Boolean = false) {
         if (text.isBlank()) return
+        
+        isCurrentTaskVoice = isVoice
 
         // Create or get active session
         if (currentSessionId == null) {
@@ -189,8 +193,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     ))
                 }
 
-                // Speak result if voice engine is active
-                voiceEngine.speak(state.summary)
+                // Speak result if voice engine is active and task was voice triggered
+                if (isCurrentTaskVoice) {
+                    voiceEngine.speak(state.summary)
+                }
             }
             is AgentState.Failed -> {
                 _isProcessing.value = false
@@ -210,7 +216,9 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     ))
                 }
 
-                voiceEngine.speak("Sorry, I couldn't complete that. ${state.reason}")
+                if (isCurrentTaskVoice) {
+                    voiceEngine.speak("Sorry, I couldn't complete that. ${state.reason}")
+                }
             }
             is AgentState.WaitingConfirmation -> {
                 _messages.value = _messages.value + ChatMessage(

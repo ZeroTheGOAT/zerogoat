@@ -1,3 +1,4 @@
+com.zerogoat.zero:xml/voice_interaction = 0x7f100001
 com.zerogoat.zero:styleable/Toolbar = 0x7f0f0033
 com.zerogoat.zero:styleable/StateListDrawable = 0x7f0f002f
 com.zerogoat.zero:styleable/Spinner = 0x7f0f002e

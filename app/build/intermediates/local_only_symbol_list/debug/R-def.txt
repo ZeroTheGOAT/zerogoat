@@ -39,3 +39,4 @@ string setup_welcome_title
 string voice_input
 style Theme.ZeroGoat
 xml accessibility_service_config
+xml voice_interaction
