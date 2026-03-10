@@ -26,17 +26,21 @@ class GroqClient(private val apiKey: String) : LLMClient {
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
+    override val providerName = "Groq"
+
     override suspend fun chat(
-        messages: List<LLMClient.Message>,
-        systemPrompt: String?
-    ): LLMClient.Response {
+        systemPrompt: String,
+        userMessage: String,
+        conversationHistory: List<ChatMessage>
+    ): LLMResponse {
         val messagesJson = JSONArray()
-        systemPrompt?.let {
-            messagesJson.put(JSONObject().put("role", "system").put("content", it))
+        if (systemPrompt.isNotEmpty()) {
+            messagesJson.put(JSONObject().put("role", "system").put("content", systemPrompt))
         }
-        for (msg in messages) {
+        for (msg in conversationHistory) {
             messagesJson.put(JSONObject().put("role", msg.role).put("content", msg.content))
         }
+        messagesJson.put(JSONObject().put("role", "user").put("content", userMessage))
 
         val body = JSONObject().apply {
             put("model", DEFAULT_MODEL)
@@ -61,24 +65,25 @@ class GroqClient(private val apiKey: String) : LLMClient {
             val content = json.getJSONArray("choices")
                 .getJSONObject(0).getJSONObject("message").getString("content")
             val usage = json.optJSONObject("usage")
-            LLMClient.Response(
-                content,
-                usage?.optInt("prompt_tokens", 0) ?: 0,
-                usage?.optInt("completion_tokens", 0) ?: 0
+            LLMResponse(
+                text = content,
+                inputTokens = usage?.optInt("prompt_tokens", 0) ?: 0,
+                outputTokens = usage?.optInt("completion_tokens", 0) ?: 0
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error: ${e.message}")
-            LLMClient.Response("", 0, 0)
+            LLMResponse("", error = e.message)
         }
     }
 
     override suspend fun chatWithVision(
-        messages: List<LLMClient.Message>,
+        systemPrompt: String,
+        userMessage: String,
         imageBase64: String,
-        systemPrompt: String?
-    ): LLMClient.Response {
+        imageMimeType: String
+    ): LLMResponse {
         // Groq doesn't support vision natively — fall back to text
-        return chat(messages, systemPrompt)
+        return chat(systemPrompt, userMessage, emptyList())
     }
 
     override fun estimateTokens(text: String): Int = text.length / 4

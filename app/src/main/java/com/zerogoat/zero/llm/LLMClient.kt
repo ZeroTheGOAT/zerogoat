@@ -1,5 +1,8 @@
 package com.zerogoat.zero.llm
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+
 /**
  * Abstract LLM client interface — supports Gemini, OpenAI, and Anthropic.
  */
@@ -22,6 +25,13 @@ interface LLMClient {
         imageBase64: String,
         imageMimeType: String = "image/jpeg"
     ): LLMResponse
+
+    /** Stream text response */
+    fun chatStream(
+        systemPrompt: String,
+        userMessage: String,
+        conversationHistory: List<ChatMessage> = emptyList()
+    ): Flow<String> = emptyFlow()
 
     /** Rough token estimate for a string */
     fun estimateTokens(text: String): Int = text.length / 4

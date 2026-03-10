@@ -7,6 +7,7 @@ import com.zerogoat.zero.agent.AgentLoop
 import com.zerogoat.zero.agent.AgentState
 import com.zerogoat.zero.llm.*
 import com.zerogoat.zero.skills.SkillRegistry
+import com.zerogoat.zero.storage.ConversationMemory
 import com.zerogoat.zero.storage.PreferencesManager
 import com.zerogoat.zero.storage.SecureKeyStore
 import com.zerogoat.zero.storage.TaskHistory
@@ -36,9 +37,12 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val taskHistory = TaskHistory(app)
     private val tokenTracker = TokenTracker()
     private val skillRegistry = SkillRegistry()
+    private val memory = ConversationMemory(app)
 
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages
+
+    private var currentSessionId: String? = null
 
     private val _isProcessing = MutableStateFlow(false)
     val isProcessing: StateFlow<Boolean> = _isProcessing
@@ -68,8 +72,24 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     fun sendMessage(text: String) {
         if (text.isBlank()) return
 
-        // Add user message
+        // Create or get active session
+        if (currentSessionId == null) {
+            val session = memory.createSession()
+            currentSessionId = session.id
+        }
+        val sessionId = currentSessionId!!
+
+        // Add user message to UI and memory
         _messages.value = _messages.value + ChatMessage(text = text, isUser = true)
+        memory.addMessage(sessionId, com.zerogoat.zero.storage.ChatMessage(
+            id = java.util.UUID.randomUUID().toString(),
+            role = "user",
+            content = text
+        ))
+        if (memory.getMessages(sessionId).size == 1) {
+            memory.autoNameSession(sessionId)
+        }
+
         _isProcessing.value = true
 
         // Create LLM client based on active provider
@@ -135,7 +155,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                 ))
                 _messages.value = msgs
 
-                // Save to history
+                // Save to history and memory
                 taskHistory.add(TaskHistory.TaskEntry(
                     command = originalCommand,
                     result = state.summary,
@@ -144,6 +164,14 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     timestamp = System.currentTimeMillis(),
                     success = true
                 ))
+                currentSessionId?.let { sid ->
+                    memory.addMessage(sid, com.zerogoat.zero.storage.ChatMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        role = "assistant",
+                        content = state.summary,
+                        tokensUsed = state.tokensUsed
+                    ))
+                }
 
                 // Speak result if voice engine is active
                 voiceEngine.speak(state.summary)
@@ -156,6 +184,15 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     isUser = false
                 ))
                 _messages.value = msgs
+
+                currentSessionId?.let { sid ->
+                    memory.addMessage(sid, com.zerogoat.zero.storage.ChatMessage(
+                        id = java.util.UUID.randomUUID().toString(),
+                        role = "assistant",
+                        content = "Failed: ${state.reason}",
+                        tokensUsed = state.tokensUsed
+                    ))
+                }
 
                 voiceEngine.speak("Sorry, I couldn't complete that. ${state.reason}")
             }
@@ -192,11 +229,16 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Create an LLM client based on the active provider */
     private fun createLLMClient(): LLMClient? {
+        val model = keyStore.activeModel
         return when (keyStore.activeProvider) {
+            "openrouter" -> keyStore.openRouterApiKey?.let { OpenRouterClient(it, model) }
+            "groq" -> keyStore.groqApiKey?.let { GroqClient(it) }
+            // Ollama implementation requires a new API client using ollamaBaseUrl
+            // For now, if Ollama is selected, we might fall back or return null if OllamaClient doesn't exist yet
             "gemini" -> keyStore.geminiApiKey?.let { GeminiClient(it) }
             "openai" -> keyStore.openaiApiKey?.let { OpenAIClient(it) }
             "anthropic" -> keyStore.anthropicApiKey?.let { AnthropicClient(it) }
-            else -> keyStore.geminiApiKey?.let { GeminiClient(it) }
+            else -> keyStore.getActiveApiKey()?.let { OpenRouterClient(it, model) }
         }
     }
 

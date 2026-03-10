@@ -35,11 +35,14 @@ class OpenRouterClient(
         .readTimeout(120, TimeUnit.SECONDS)
         .build()
 
+    override val providerName = "OpenRouter"
+
     override suspend fun chat(
-        messages: List<LLMClient.Message>,
-        systemPrompt: String?
-    ): LLMClient.Response {
-        val body = buildRequestBody(messages, systemPrompt, stream = false)
+        systemPrompt: String,
+        userMessage: String,
+        conversationHistory: List<ChatMessage>
+    ): LLMResponse {
+        val body = buildRequestBody(systemPrompt, userMessage, conversationHistory, stream = false)
 
         val request = Request.Builder()
             .url(BASE_URL)
@@ -57,31 +60,26 @@ class OpenRouterClient(
     }
 
     override suspend fun chatWithVision(
-        messages: List<LLMClient.Message>,
+        systemPrompt: String,
+        userMessage: String,
         imageBase64: String,
-        systemPrompt: String?
-    ): LLMClient.Response {
+        imageMimeType: String
+    ): LLMResponse {
         val messagesJson = JSONArray()
 
-        systemPrompt?.let {
-            messagesJson.put(JSONObject().put("role", "system").put("content", it))
+        if (systemPrompt.isNotEmpty()) {
+            messagesJson.put(JSONObject().put("role", "system").put("content", systemPrompt))
         }
 
-        for (msg in messages) {
-            if (msg == messages.last()) {
-                // Last message gets the image
-                val content = JSONArray().apply {
-                    put(JSONObject().put("type", "text").put("text", msg.content))
-                    put(JSONObject().apply {
-                        put("type", "image_url")
-                        put("image_url", JSONObject().put("url", "data:image/jpeg;base64,$imageBase64"))
-                    })
-                }
-                messagesJson.put(JSONObject().put("role", msg.role).put("content", content))
-            } else {
-                messagesJson.put(JSONObject().put("role", msg.role).put("content", msg.content))
-            }
+        // Add user message with image
+        val content = JSONArray().apply {
+            put(JSONObject().put("type", "text").put("text", userMessage))
+            put(JSONObject().apply {
+                put("type", "image_url")
+                put("image_url", JSONObject().put("url", "data:$imageMimeType;base64,$imageBase64"))
+            })
         }
+        messagesJson.put(JSONObject().put("role", "user").put("content", content))
 
         val body = JSONObject().apply {
             put("model", modelId)
@@ -106,11 +104,12 @@ class OpenRouterClient(
     }
 
     /** Stream tokens in real-time via SSE */
-    fun chatStream(
-        messages: List<LLMClient.Message>,
-        systemPrompt: String?
+    override fun chatStream(
+        systemPrompt: String,
+        userMessage: String,
+        conversationHistory: List<ChatMessage>
     ): Flow<String> = flow {
-        val body = buildRequestBody(messages, systemPrompt, stream = true)
+        val body = buildRequestBody(systemPrompt, userMessage, conversationHistory, stream = true)
 
         val request = Request.Builder()
             .url(BASE_URL)
@@ -151,19 +150,23 @@ class OpenRouterClient(
     }
 
     private fun buildRequestBody(
-        messages: List<LLMClient.Message>,
-        systemPrompt: String?,
+        systemPrompt: String,
+        userMessage: String,
+        conversationHistory: List<ChatMessage>,
         stream: Boolean
     ): JSONObject {
         val messagesJson = JSONArray()
 
-        systemPrompt?.let {
-            messagesJson.put(JSONObject().put("role", "system").put("content", it))
+        if (systemPrompt.isNotEmpty()) {
+            messagesJson.put(JSONObject().put("role", "system").put("content", systemPrompt))
         }
 
-        for (msg in messages) {
+        for (msg in conversationHistory) {
             messagesJson.put(JSONObject().put("role", msg.role).put("content", msg.content))
         }
+        
+        // Add current message
+        messagesJson.put(JSONObject().put("role", "user").put("content", userMessage))
 
         return JSONObject().apply {
             put("model", modelId)
@@ -178,7 +181,7 @@ class OpenRouterClient(
         }
     }
 
-    private fun parseResponse(body: String): LLMClient.Response {
+    private fun parseResponse(body: String): LLMResponse {
         return try {
             val json = JSONObject(body)
             val choices = json.getJSONArray("choices")
@@ -189,10 +192,10 @@ class OpenRouterClient(
             val inputTokens = usage?.optInt("prompt_tokens", 0) ?: 0
             val outputTokens = usage?.optInt("completion_tokens", 0) ?: 0
 
-            LLMClient.Response(content, inputTokens, outputTokens)
+            LLMResponse(content, inputTokens, outputTokens)
         } catch (e: Exception) {
             Log.e(TAG, "Parse error: ${e.message}, body: ${body.take(200)}")
-            LLMClient.Response("", 0, 0)
+            LLMResponse("", error = e.message)
         }
     }
 }

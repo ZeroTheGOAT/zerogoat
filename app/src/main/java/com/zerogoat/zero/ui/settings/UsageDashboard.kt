@@ -26,7 +26,7 @@ fun UsageDashboard(onBack: () -> Unit) {
     val context = LocalContext.current
     val taskHistory = remember { TaskHistory(context) }
     val memory = remember { ConversationMemory(context) }
-    val tasks = remember { taskHistory.getRecentTasks(50) }
+    val tasks = remember { taskHistory.getAll().take(50) }
     val sessions = remember { memory.getAllSessions() }
 
     var totalTokens by remember { mutableIntStateOf(0) }
@@ -85,7 +85,7 @@ fun UsageDashboard(onBack: () -> Unit) {
                     modifier = Modifier.padding(top = 8.dp))
             }
 
-            sessions.take(10).forEachIndexed { _, session ->
+            for (session in sessions.take(10)) {
                 item {
                     Surface(color = ZeroColors.Surface, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -111,14 +111,14 @@ fun UsageDashboard(onBack: () -> Unit) {
                     modifier = Modifier.padding(top = 8.dp))
             }
 
-            tasks.take(10).forEachIndexed { _, task ->
+            for (task in tasks.take(10)) {
                 item {
                     Surface(color = ZeroColors.Surface, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(12.dp)) {
                             Text(task.command, color = ZeroColors.TextPrimary, fontSize = 13.sp, maxLines = 2)
                             Row {
                                 Text(
-                                    "${task.steps.size} steps · ${if (task.success) "✅" else "❌"}",
+                                    "${task.steps} steps · ${if (task.success) "✅" else "❌"}",
                                     color = if (task.success) ZeroColors.AccentGreen else ZeroColors.AccentRed,
                                     fontSize = 11.sp
                                 )

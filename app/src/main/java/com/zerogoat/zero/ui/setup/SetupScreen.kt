@@ -26,8 +26,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zerogoat.zero.accessibility.ZeroAccessibilityService
+import com.zerogoat.zero.llm.ModelRegistry
 import com.zerogoat.zero.storage.PreferencesManager
 import com.zerogoat.zero.storage.SecureKeyStore
+import com.zerogoat.zero.ui.settings.ModelPickerDialog
 import com.zerogoat.zero.ui.theme.ZeroColors
 
 /**
@@ -41,7 +43,9 @@ fun SetupScreen(onSetupComplete: () -> Unit) {
     val prefs = remember { PreferencesManager(context) }
 
     var currentStep by remember { mutableIntStateOf(0) }
-    var selectedProvider by remember { mutableStateOf("gemini") }
+    var selectedProvider by remember { mutableStateOf("openrouter") }
+    var selectedModel by remember { mutableStateOf("google/gemini-2.0-flash-exp:free") }
+    var showModelPicker by remember { mutableStateOf(false) }
     var apiKey by remember { mutableStateOf("") }
     var showKey by remember { mutableStateOf(false) }
 
@@ -106,10 +110,15 @@ fun SetupScreen(onSetupComplete: () -> Unit) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Provider selection
-                listOf("gemini" to "Gemini (Recommended — Cheapest)",
-                    "openai" to "OpenAI (GPT-4o-mini)",
-                    "anthropic" to "Anthropic (Claude)"
-                ).forEach { (id, label) ->
+                val providers = listOf(
+                    "openrouter" to "🌐 OpenRouter (100+ models)",
+                    "gemini" to "🔵 Google Gemini",
+                    "openai" to "🟢 OpenAI",
+                    "anthropic" to "🟠 Anthropic",
+                    "groq" to "⚡ Groq (Fast)",
+                    "ollama" to "🏠 Ollama (Local)"
+                )
+                providers.forEach { (id, label) ->
                     Surface(
                         onClick = { selectedProvider = id },
                         color = if (selectedProvider == id) ZeroColors.AccentCyan.copy(alpha = 0.15f)
@@ -135,6 +144,29 @@ fun SetupScreen(onSetupComplete: () -> Unit) {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Model Picker (only if openrouter, groq etc. We can just show it always or based on logic)
+                val modelInfo = ModelRegistry.findById(selectedModel)
+                Surface(
+                    onClick = { showModelPicker = true },
+                    color = ZeroColors.Surface,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(modelInfo?.name ?: selectedModel, color = ZeroColors.TextPrimary, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "${modelInfo?.provider ?: "?"} · ${modelInfo?.let { "\$${it.inputCostPer1M}/M in" } ?: ""}",
+                                color = ZeroColors.TextSecondary, fontSize = 12.sp
+                            )
+                        }
+                        Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = ZeroColors.TextMuted)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 OutlinedTextField(
                     value = apiKey,
                     onValueChange = { apiKey = it },
@@ -168,11 +200,14 @@ fun SetupScreen(onSetupComplete: () -> Unit) {
                 Button(
                     onClick = {
                         when (selectedProvider) {
+                            "openrouter" -> keyStore.openRouterApiKey = apiKey
                             "gemini" -> keyStore.geminiApiKey = apiKey
                             "openai" -> keyStore.openaiApiKey = apiKey
                             "anthropic" -> keyStore.anthropicApiKey = apiKey
+                            "groq" -> keyStore.groqApiKey = apiKey
                         }
                         keyStore.activeProvider = selectedProvider
+                        keyStore.activeModel = selectedModel
                         currentStep = 2
                     },
                     enabled = apiKey.length >= 10,
@@ -314,5 +349,13 @@ fun SetupScreen(onSetupComplete: () -> Unit) {
                 )
             }
         }
+    }
+
+    if (showModelPicker) {
+        ModelPickerDialog(
+            currentModel = selectedModel,
+            onSelect = { selectedModel = it; showModelPicker = false },
+            onDismiss = { showModelPicker = false }
+        )
     }
 }
