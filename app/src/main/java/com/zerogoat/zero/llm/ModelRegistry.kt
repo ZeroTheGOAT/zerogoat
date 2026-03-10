@@ -32,10 +32,14 @@ object ModelRegistry {
         ModelInfo("nousresearch/hermes-3-llama-3.1-405b:free", "Hermes 3 405B", "Nous", Category.FREE, 131072, inputCostPer1M = 0.0, outputCostPer1M = 0.0, isFree = true),
 
         // ===== GOOGLE =====
+        ModelInfo("google/gemini-2.5-pro", "Gemini 2.5 Pro", "Google", Category.SMART, 2000000, supportsVision = true, inputCostPer1M = 2.0, outputCostPer1M = 8.0),
+        ModelInfo("google/gemini-2.5-flash", "Gemini 2.5 Flash", "Google", Category.FAST, 1000000, supportsVision = true, inputCostPer1M = 0.075, outputCostPer1M = 0.30),
+        ModelInfo("google/gemini-2.0-pro-exp-02-05", "Gemini 2.0 Pro Exp", "Google", Category.SMART, 2000000, supportsVision = true, inputCostPer1M = 0.0, outputCostPer1M = 0.0),
         ModelInfo("google/gemini-2.0-flash-exp", "Gemini 2.0 Flash", "Google", Category.FAST, 1048576, supportsVision = true, inputCostPer1M = 0.075, outputCostPer1M = 0.30),
         ModelInfo("google/gemini-2.0-flash-thinking-exp", "Gemini 2.0 Flash Thinking", "Google", Category.REASONING, 1048576, inputCostPer1M = 0.075, outputCostPer1M = 0.30),
         ModelInfo("google/gemini-pro-1.5", "Gemini 1.5 Pro", "Google", Category.SMART, 2097152, supportsVision = true, inputCostPer1M = 1.25, outputCostPer1M = 5.0),
         ModelInfo("google/gemini-flash-1.5", "Gemini 1.5 Flash", "Google", Category.FAST, 1048576, supportsVision = true, inputCostPer1M = 0.075, outputCostPer1M = 0.30),
+        ModelInfo("google/gemini-flash-1.5-8b", "Gemini 1.5 Flash 8B", "Google", Category.FAST, 1048576, supportsVision = true, inputCostPer1M = 0.0375, outputCostPer1M = 0.15),
         ModelInfo("google/gemma-2-27b-it", "Gemma 2 27B", "Google", Category.FAST, 8192, inputCostPer1M = 0.27, outputCostPer1M = 0.27),
 
         // ===== OPENAI =====
@@ -139,6 +143,10 @@ object ModelRegistry {
         ModelInfo("groq/llama-3.1-8b-instant", "Llama 3.1 8B (Groq)", "Groq", Category.FAST, 131072, inputCostPer1M = 0.05, outputCostPer1M = 0.08),
         ModelInfo("groq/mixtral-8x7b-32768", "Mixtral 8x7B (Groq)", "Groq", Category.FAST, 32768, inputCostPer1M = 0.24, outputCostPer1M = 0.24),
         ModelInfo("groq/gemma2-9b-it", "Gemma 2 9B (Groq)", "Groq", Category.FAST, 8192, inputCostPer1M = 0.20, outputCostPer1M = 0.20),
+
+        // ===== MOONSHOT AI (KIMI) =====
+        ModelInfo("moonshotai/moonshot-v1-8k", "Kimi (Moonshot 8K)", "Moonshot", Category.SMART, 8192, inputCostPer1M = 1.60, outputCostPer1M = 1.60),
+        ModelInfo("moonshotai/moonshot-v1-32k", "Kimi (Moonshot 32K)", "Moonshot", Category.SMART, 32768, inputCostPer1M = 3.20, outputCostPer1M = 3.20),
     )
 
     // ===== Quick-pick helpers =====

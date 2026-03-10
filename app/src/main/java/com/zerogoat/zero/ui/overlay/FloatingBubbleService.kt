@@ -12,6 +12,8 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.core.app.NotificationCompat
+import com.zerogoat.zero.storage.PreferencesManager
+import com.zerogoat.zero.voice.WakeWordDetector
 
 /**
  * Floating bubble service — shows Zero's status as an always-on-top widget.
@@ -31,12 +33,34 @@ class FloatingBubbleService : Service() {
     private var initialTouchX = 0f
     private var initialTouchY = 0f
 
+    private var wakeWordDetector: WakeWordDetector? = null
+    private lateinit var prefs: PreferencesManager
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
+        prefs = PreferencesManager(this)
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
+        
+        if (prefs.wakeWordEnabled) {
+            startWakeWordDetector()
+        }
+    }
+
+    private fun startWakeWordDetector() {
+        if (wakeWordDetector != null) return
+        
+        wakeWordDetector = WakeWordDetector(this)
+        wakeWordDetector?.updateWakeWords(prefs.wakeWords)
+        wakeWordDetector?.start {
+            // Wake word detected! Launch app and trigger voice
+            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+            launchIntent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            launchIntent?.putExtra("start_voice", true)
+            if (launchIntent != null) startActivity(launchIntent)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -101,6 +125,7 @@ class FloatingBubbleService : Service() {
 
     override fun onDestroy() {
         bubbleView?.let { windowManager?.removeView(it) }
+        wakeWordDetector?.stop()
         super.onDestroy()
     }
 
