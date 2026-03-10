@@ -53,10 +53,26 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     val voiceEngine = VoiceEngine(app)
     private var agentLoop: AgentLoop? = null
 
+    private val voiceReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
+            if (intent?.action == "com.zerogoat.zero.START_VOICE") {
+                voiceEngine.startListening()
+            }
+        }
+    }
+
     init {
         // Initialize voice with command handler
         voiceEngine.initialize { command ->
             sendMessage(command)
+        }
+
+        // Register voice receiver
+        val filter = android.content.IntentFilter("com.zerogoat.zero.START_VOICE")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            app.registerReceiver(voiceReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            app.registerReceiver(voiceReceiver, filter)
         }
 
         // Add welcome message
@@ -244,6 +260,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     override fun onCleared() {
         super.onCleared()
+        getApplication<Application>().unregisterReceiver(voiceReceiver)
         voiceEngine.release()
     }
 }

@@ -354,6 +354,7 @@ fun SetupScreen(onSetupComplete: () -> Unit) {
     if (showModelPicker) {
         ModelPickerDialog(
             currentModel = selectedModel,
+            selectedProvider = selectedProvider,
             onSelect = { selectedModel = it; showModelPicker = false },
             onDismiss = { showModelPicker = false }
         )

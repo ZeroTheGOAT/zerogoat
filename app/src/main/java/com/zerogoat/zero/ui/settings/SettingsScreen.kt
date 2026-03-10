@@ -238,6 +238,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     if (showModelPicker) {
         ModelPickerDialog(
             currentModel = selectedModel,
+            selectedProvider = selectedProvider,
             onSelect = { selectedModel = it; showModelPicker = false },
             onDismiss = { showModelPicker = false }
         )
@@ -299,17 +300,27 @@ fun SettingsToggle(label: String, checked: Boolean, onCheckedChange: (Boolean) -
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModelPickerDialog(currentModel: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
+fun ModelPickerDialog(currentModel: String, selectedProvider: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<ModelRegistry.Category?>(null) }
 
-    val filteredModels = remember(searchQuery, selectedCategory) {
+    val filteredModels = remember(searchQuery, selectedCategory, selectedProvider) {
         ModelRegistry.allModels.filter { model ->
+            val providerMatch = when (selectedProvider) {
+                "openrouter" -> !model.id.startsWith("ollama/") && !model.id.startsWith("groq/")
+                "groq" -> model.id.startsWith("groq/")
+                "ollama" -> model.id.startsWith("ollama/")
+                "gemini" -> model.provider.equals("Google", ignoreCase = true) && !model.id.startsWith("groq/")
+                "openai" -> model.provider.equals("OpenAI", ignoreCase = true) && !model.id.startsWith("groq/")
+                "anthropic" -> model.provider.equals("Anthropic", ignoreCase = true) && !model.id.startsWith("groq/")
+                else -> true
+            }
             val matchesSearch = searchQuery.isEmpty() ||
                 model.name.contains(searchQuery, ignoreCase = true) ||
                 model.provider.contains(searchQuery, ignoreCase = true)
             val matchesCategory = selectedCategory == null || model.category == selectedCategory
-            matchesSearch && matchesCategory
+            
+            providerMatch && matchesSearch && matchesCategory
         }
     }
 

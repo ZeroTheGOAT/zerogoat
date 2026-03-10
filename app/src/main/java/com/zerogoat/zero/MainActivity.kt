@@ -5,6 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.zerogoat.zero.storage.PreferencesManager
 import com.zerogoat.zero.ui.chat.ChatScreen
 import com.zerogoat.zero.ui.setup.SetupScreen
@@ -23,6 +27,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val prefs = PreferencesManager(this)
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
+        }
 
         setContent {
             ZeroGoatTheme {
