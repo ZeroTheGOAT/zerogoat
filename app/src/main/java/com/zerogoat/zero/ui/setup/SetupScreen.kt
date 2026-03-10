@@ -44,7 +44,7 @@ fun SetupScreen(onSetupComplete: () -> Unit) {
 
     var currentStep by remember { mutableIntStateOf(0) }
     var selectedProvider by remember { mutableStateOf("openrouter") }
-    var selectedModel by remember { mutableStateOf("google/gemini-2.0-flash-exp:free") }
+    var selectedModel by remember { mutableStateOf("google/gemini-2.5-flash") }
     var showModelPicker by remember { mutableStateOf(false) }
     var apiKey by remember { mutableStateOf("") }
     var showKey by remember { mutableStateOf(false) }

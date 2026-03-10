@@ -388,7 +388,7 @@ object ModelRegistry {
     fun findById(id: String): ModelInfo? = allModels.find { it.id == id }
 
     /** Recommended model for Zero agent (cheapest + fast + good) */
-    val defaultModel = allModels.first { it.id == "google/gemini-2.0-flash-exp" }
+    val defaultModel = allModels.find { it.id.contains("google/gemini-2.5-flash") } ?: allModels.first()
 
     /** Quick picks for the model selector */
     val quickPicks = listOf(

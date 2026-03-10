@@ -70,7 +70,7 @@ class SecureKeyStore(context: Context) {
         set(value) = prefs.edit().putString(KEY_ACTIVE_PROVIDER, value).apply()
 
     var activeModel: String
-        get() = prefs.getString(KEY_ACTIVE_MODEL, "google/gemini-2.0-flash-exp") ?: "google/gemini-2.0-flash-exp"
+        get() = prefs.getString(KEY_ACTIVE_MODEL, "google/gemini-2.5-flash") ?: "google/gemini-2.5-flash"
         set(value) = prefs.edit().putString(KEY_ACTIVE_MODEL, value).apply()
 
     /** Check if at least one API key is configured */
