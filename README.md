@@ -1,4 +1,4 @@
-incomplete (gave up after this chigga claude burnt ~200$ credit for this shltty work)
+incomplete (gave up after this chigga claude burnt ~200$ worth credits for this shltty work)
 # ZeroGoat 🐐
 
 **Zero — Your JARVIS for Android.**
